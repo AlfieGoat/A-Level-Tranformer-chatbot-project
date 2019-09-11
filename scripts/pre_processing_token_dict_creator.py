@@ -27,15 +27,17 @@ class TokenDictCreator:
             compressed_tally_dict = self.compress_vocab(tally_dict, pre_bpe_vocab_size, track_progress)
 
         tally_dict_ready_for_bpe = self.split_keys_for_bpe(compressed_tally_dict)
-        num_of_tokens = self.count_tokens(tally_dict_ready_for_bpe)
+
+        num_of_tokens = self.count_bpe_tokens(tally_dict_ready_for_bpe)
 
         while num_of_tokens <= vocab_size:
             final_dict = self.byte_pair_encodings_creator(tally_dict, track_progress)
+            num_of_tokens += 1
 
         return final_dict
 
     @staticmethod
-    def count_tokens(tally_dict):
+    def count_bpe_tokens(tally_dict):
 
         token_counter = []
         for key, value in tally_dict.items():
