@@ -28,12 +28,17 @@ class TokenDictCreator:
 
         tally_dict_ready_for_bpe = self.split_keys_for_bpe(compressed_tally_dict)
 
-        num_of_tokens = self.count_bpe_tokens(tally_dict_ready_for_bpe)
+        num_of_tokens = self.count_bpe_tokens(tally_dict_ready_for_bpe) + 1
+        final_dict = self.byte_pair_encodings_creator(tally_dict_ready_for_bpe, track_progress)
 
         while num_of_tokens <= vocab_size:
             final_dict = self.byte_pair_encodings_creator(tally_dict, track_progress)
             num_of_tokens += 1
 
+            if track_progress > 0 and (num_of_tokens % 25) == 0:
+                print(f"Number of tokens: {num_of_tokens}")
+
+        pickle.dump(final_dict, open("vocab_dict.pickle", "wb"))
         return final_dict
 
     @staticmethod
@@ -114,7 +119,7 @@ class TokenDictCreator:
 
     @staticmethod
     def compress_vocab(tally_dict, pre_bpe_vocab_size, track_progress):
-
+        # Shrinks the dictionary, removing the rarest tokens first until it reaches wanted vocab size
         to_remove = []
         key_delete = 1
         while len(tally_dict) >= pre_bpe_vocab_size:
@@ -131,7 +136,7 @@ class TokenDictCreator:
                 print(f"Current length of dict: {len(tally_dict)}")
 
         pickle.dump(tally_dict, open("compressed_tally_dict.pickle", "wb"))
-        return  tally_dict
+        return tally_dict
 
     @staticmethod
     def count_tokens(file_paths, filter_parameters=(2, ["deleted", "removed"]),
@@ -140,8 +145,8 @@ class TokenDictCreator:
         # punctuation = '!"£$%^&*()_+={[}]:;@~#<,>.?/'
         counting_dict = {}
         # counting_dict = pickle.load(open("tally_dict.pickle", "rb"))
-        if track_progress > 0:
-            start_time = time.time()
+
+        start_time = time.time()
 
         for file_path in file_paths:
             json_file = open(file_path, "r")
@@ -161,7 +166,7 @@ class TokenDictCreator:
                     if "RC" in file_path:
                         body = current_line_converted["body"]
 
-                    elif "RS" in file_path:
+                    else:
                         self_text = current_line_converted["selftext"]
                         title = current_line_converted["title"]
                         body = f"{title} {self_text}"
@@ -183,40 +188,3 @@ class TokenDictCreator:
                                 counting_dict[token] = counting_dict[token] + 1
             pickle.dump(counting_dict, open("tally_dict.pickle", "wb"))
         return counting_dict
-
-    # TODO def save_dict(self):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
