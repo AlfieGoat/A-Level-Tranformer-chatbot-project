@@ -16,23 +16,29 @@ class TokenDictCreator:
         # being the min upvotes, second index being a list of
         # invalid words.
 
-        if load_tally_dict:
+        if load_tally_dict and not load_compressed_tally_dict:
+            print("Beginning to load tally dictionary")
             tally_dict = pickle.load(open("tally_dict.pickle", "rb"))
+
         else:
+            print("Beginning to create tally dictionary")
             tally_dict = self.count_tokens(file_paths, filter_parameters, track_progress)
 
         if load_compressed_tally_dict:
+            print("Beginning to load compressed tally dictionary")
             compressed_tally_dict = pickle.load(open("compressed_tally_dict.pickle", "rb"))
         else:
+            print("Beginning to create compressed tally dictionary")
             compressed_tally_dict = self.compress_vocab(tally_dict, pre_bpe_vocab_size, track_progress)
 
+        print("Splitting tokens and adding </w> to the end for BPE")
         tally_dict_ready_for_bpe = self.split_keys_for_bpe(compressed_tally_dict)
 
         num_of_tokens = self.count_bpe_tokens(tally_dict_ready_for_bpe) + 1
         final_dict = self.byte_pair_encodings_creator(tally_dict_ready_for_bpe, track_progress)
 
         while num_of_tokens <= vocab_size:
-            final_dict = self.byte_pair_encodings_creator(tally_dict, track_progress)
+            final_dict = self.byte_pair_encodings_creator(final_dict, track_progress)
             num_of_tokens += 1
 
             if track_progress > 0 and (num_of_tokens % 25) == 0:
@@ -42,30 +48,33 @@ class TokenDictCreator:
         return final_dict
 
     @staticmethod
-    def count_bpe_tokens(tally_dict):
+    def count_bpe_tokens(tally_dict, return_list=False):
 
         token_counter = []
         for key, value in tally_dict.items():
             for key_token in key:
                 if key_token not in token_counter:
                     token_counter.append(key_token)
-
-        return len(token_counter)
+        if not return_list:
+            return len(token_counter)
+        else:
+            return token_counter
 
     def byte_pair_encodings_creator(self, tally_dict, track_progress):
 
+        text_category = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'-"
         byte_counter = {}
-
         for key, value in tally_dict.items():  # Goes through dict and tallies most common pairs of tokens
             for i in range(len(key) - 1):
-                if f"{key[i]}{key[i + 1]}" not in byte_counter:
-                    byte_counter[f"{key[i]}{key[i + 1]}"] = value
-                else:
-                    byte_counter[f"{key[i]}{key[i + 1]}"] = byte_counter[f"{key[i]}{key[i + 1]}"] + value
+                if (len(key[i]) > 1 or key[i] in text_category) and (len(key[i+1]) > 1 or key[i+1] in text_category):
+                    if f"{key[i]}{key[i + 1]}" not in byte_counter:
+                        byte_counter[f"{key[i]}{key[i + 1]}"] = value
+                    else:
+                        byte_counter[f"{key[i]}{key[i + 1]}"] = byte_counter[f"{key[i]}{key[i + 1]}"] + value
 
         largest_pair = 0
         most_common_pair = ""
-        for key, value in byte_counter.items():  # Finds most common pairs of tokens
+        for key, value in byte_counter.items():  # Finds most common pair of tokens
             if value > largest_pair:
                 largest_pair = value
                 most_common_pair = key
@@ -110,6 +119,7 @@ class TokenDictCreator:
                 key_list = list(key)
                 key_list[i] = most_common_token
                 del key_list[i + 1]
+                # print(key_list)
                 re_check = self.edit_key(key_list, most_common_token)
                 if re_check is not None:
                     return re_check

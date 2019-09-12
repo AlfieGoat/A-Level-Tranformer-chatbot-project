@@ -23,4 +23,4 @@ token_dict.count_tokens(["Z:/Code/A-Level-Tranformer-chatbot-project/data/uncomp
                          "Z:/Code/A-Level-Tranformer-chatbot-project/data/uncompressed/RS_2019-03",
                          "Z:/Code/A-Level-Tranformer-chatbot-project/data/uncompressed/RS_2019-04"])
 """
-token_dict.create_dict([], 100000, 15000, load_tally_dict=True, load_compressed_tally_dict=True)
+token_dict.create_dict([], 220000, 15000, load_tally_dict=True, load_compressed_tally_dict=False)
