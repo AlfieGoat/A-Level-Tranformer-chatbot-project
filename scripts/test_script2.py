@@ -1,5 +1,4 @@
 import pre_processing_token_dict_creator
-import pickle
 
 token_dict = pre_processing_token_dict_creator.TokenDictCreator()
 """

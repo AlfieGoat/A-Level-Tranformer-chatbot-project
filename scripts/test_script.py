@@ -1,15 +1,16 @@
-"""
+import sqlite3
+from pre_processing_database import Database
 import pre_processing_token_dict_creator
 import pickle
-
+import time
 
 token_dict = pre_processing_token_dict_creator.TokenDictCreator()
 # token_dict.create_dict(["Z:/Code/A-Level-Tranformer-chatbot-project/data/uncompressed/RC_2019-04"], 100000)
 vocab_dict = pickle.load(open("vocab_dict.pickle", "rb"))
 
-print(token_dict.count_bpe_tokens(vocab_dict, return_list=True))
+print(vocab_dict)
+time.sleep(60)
 """
-
 a = "hello£$%^&😋"
 old_string = str(a.encode("utf-8"))
 new_string = ""
@@ -19,3 +20,10 @@ for count, value in enumerate(old_string):
 # b = b.encode("ascii")
 print(new_string)
 print(eval("b'"+new_string+"\xf0\x9f\x98\x8b'").decode('utf-8'))
+
+db = Database()
+cache = []
+items = db.iterate_over_comments()
+for i in items:
+    cache.append(i)
+"""

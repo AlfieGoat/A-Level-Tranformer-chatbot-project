@@ -1,6 +1,6 @@
 import json
-import time
 import pickle
+import time
 
 
 class TokenDictCreator:
@@ -27,6 +27,7 @@ class TokenDictCreator:
         if load_compressed_tally_dict:
             print("Beginning to load compressed tally dictionary")
             compressed_tally_dict = pickle.load(open("compressed_tally_dict.pickle", "rb"))
+
         else:
             print("Beginning to create compressed tally dictionary")
             compressed_tally_dict = self.compress_vocab(tally_dict, pre_bpe_vocab_size, track_progress)
@@ -44,8 +45,17 @@ class TokenDictCreator:
             if track_progress > 0 and (num_of_tokens % 25) == 0:
                 print(f"Number of tokens: {num_of_tokens}")
 
+        final_dict = self.convert_to_vocab_dict_with_ids(final_dict)
+
         pickle.dump(final_dict, open("vocab_dict.pickle", "wb"))
         return final_dict
+
+    def convert_to_vocab_dict_with_ids(self, vocab_dict):
+        vocab_list = self.count_bpe_tokens(vocab_dict, return_list=True)
+        vocab_dict = {}
+        for count, token in enumerate(vocab_list):
+            vocab_dict[token] = count
+        return vocab_dict
 
     @staticmethod
     def count_bpe_tokens(tally_dict, return_list=False):
@@ -108,7 +118,7 @@ class TokenDictCreator:
 
         for key, value in tally_dict.items():
             key_list = list(key)
-            key_list.append("</w>")
+            # key_list.append("</w>")
             new_tally_dict[tuple(key_list)] = value
         return new_tally_dict
 
@@ -173,6 +183,7 @@ class TokenDictCreator:
                 current_line_converted = json.loads(line)
 
                 if int(current_line_converted["score"]) >= filter_parameters[0]:
+
                     if "RC" in file_path:
                         body = current_line_converted["body"]
 
@@ -196,5 +207,6 @@ class TokenDictCreator:
 
                             else:
                                 counting_dict[token] = counting_dict[token] + 1
+
             pickle.dump(counting_dict, open("tally_dict.pickle", "wb"))
         return counting_dict

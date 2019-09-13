@@ -1,5 +1,6 @@
-import zstandard as zstd
 import time
+
+import zstandard as zstd
 
 dctx = zstd.ZstdDecompressor()
 
@@ -10,7 +11,8 @@ for i in dirs:
     
     time1 = time.time()
     print(i)
-    with open(f"Z:/Code/Neural_Network_stuff/Datasets/reddit_comments/{i}.zst", 'rb') as ifh, open(f"Z:/Code/Neural_Network_stuff/Datasets/reddit_comments/unzipped/{i}", 'wb') as ofh:
+    with open(f"Z:/Code/Neural_Network_stuff/Datasets/reddit_comments/{i}.zst", 'rb') as ifh, \
+            open(f"Z:/Code/Neural_Network_stuff/Datasets/reddit_comments/unzipped/{i}", 'wb') as ofh:
         dctx.copy_stream(ifh, ofh, write_size=65536)
         
     print(time.time()-time1)
