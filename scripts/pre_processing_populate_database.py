@@ -52,7 +52,7 @@ for file_name in file_paths:  # iterates through the files
         if line_converted["score"] > 1:  # Checks that the score of the comment is at least 1
             if "RC" in file_name:  # Checks if it is a comment
                 if "deleted" not in line_converted["body"] and "removed" not in line_converted["body"]:
-                    # Checks if comment has been deleted or removed
+                    # Validation: Checks if comment has been deleted or removed
                     cache_comments.append((f"t1_{line_converted['id']}",
                                            line_converted["parent_id"],
                                            line_converted["score"],
@@ -63,7 +63,7 @@ for file_name in file_paths:  # iterates through the files
             elif "RS" in file_name:  # Checks if it is a submission
                 if "deleted" not in line_converted["title"] and "removed" not in line_converted["title"]:
                     if "deleted" not in line_converted["selftext"] and "removed" not in line_converted["selftext"]:
-                        # Checks if submission has been deleted or removed
+                        # Validation: Checks if submission has been deleted or removed
                         cache_submissions.append((f"t3_{line_converted['id']}",
                                                   line_converted["score"],
                                                   line_converted["subreddit"],

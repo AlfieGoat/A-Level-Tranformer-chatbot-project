@@ -210,7 +210,7 @@ class TokenDictCreator:
 
                     flag = False
                     for banned_token in filter_parameters[1]:
-                        # makes sure it doesn't contain banned tokens such as deleted or removed.
+                        # Validation: makes sure it doesn't contain banned tokens such as deleted or removed.
                         if banned_token in body:
                             flag = True
 

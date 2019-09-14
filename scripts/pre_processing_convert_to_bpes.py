@@ -39,7 +39,7 @@ def convert_tokens_to_bpes(original_string, vocab):
 
     try:
         token_list = [max(candidate, key=len)]  # this picks the longest candidate
-    except ValueError:  # Value error is raised when something is not in the vocab
+    except ValueError:  # Validation: Value error is raised when something is not in the vocab
         print(f"{original_string[0]} not in vocab.")
         vocab[original_string[0]] = len(vocab)  # Adds missing token to vocab
         pickle.dump(vocab, open("vocab_dict.pickle", "wb"))
