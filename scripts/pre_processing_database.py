@@ -6,7 +6,7 @@ class Database:
     def __init__(self):
         self.db = sqlite3.connect("database")  # Connects to db file, or creates it if it doesn't exist
         self.cursor = self.db.cursor()
-
+        self.cursor2 = self.db.cursor()
         # Creates the tables if the don't exist with the required fields
         self.cursor.execute("CREATE TABLE IF NOT EXISTS "
                             "comments"
@@ -43,11 +43,11 @@ class Database:
 
     # A way of getting a comment with a specific id
     def get_comment_by_id(self, comment_id):
-        return self.cursor.execute(f"SELECT * FROM COMMENTS WHERE id ='{comment_id}'").fetchone()
+        return self.cursor2.execute(f"SELECT * FROM COMMENTS WHERE id ='{comment_id}'").fetchone()
 
     # A way of getting a submission with a specific id
     def get_submission_by_id(self, submission_id):
-        return self.cursor.execute(f"SELECT * FROM SUBMISSIONS WHERE id ='{submission_id}'").fetchone()
+        return self.cursor2.execute(f"SELECT * FROM SUBMISSIONS WHERE id ='{submission_id}'").fetchone()
 
 
 

@@ -16,13 +16,14 @@ class TokenDictCreator:
         # being the min upvotes, second index being a list of
         # invalid words.
 
-        if load_tally_dict and not load_compressed_tally_dict:  # Checks if user wants to load an existing tally_dict
-            print("Beginning to load tally dictionary")
-            tally_dict = pickle.load(open("tally_dict.pickle", "rb"))
+        if not load_compressed_tally_dict:
+            if load_tally_dict:  # Checks if user wants to load an existing tally_dict
+                print("Beginning to load tally dictionary")
+                tally_dict = pickle.load(open("tally_dict.pickle", "rb"))
 
-        else:
-            print("Beginning to create tally dictionary")
-            tally_dict = self.count_tokens(file_paths, filter_parameters, track_progress)
+            else:
+                print("Beginning to create tally dictionary")
+                tally_dict = self.count_tokens(file_paths, filter_parameters, track_progress)
 
         if load_compressed_tally_dict:  # Checks if user wants to load an existing compressed_dict
             print("Beginning to load compressed tally dictionary")
@@ -35,7 +36,7 @@ class TokenDictCreator:
         print("Splitting tokens for BPE")
         tally_dict_ready_for_bpe = self.split_keys_for_bpe(compressed_tally_dict)
 
-        # Counts the inital number of tokens
+        # Counts the initial number of tokens
         num_of_tokens = self.count_bpe_tokens(tally_dict_ready_for_bpe) + 1
         # Finds the most common pair of tokens and merges them
         final_dict = self.byte_pair_encodings_creator(tally_dict_ready_for_bpe, track_progress)
@@ -59,7 +60,8 @@ class TokenDictCreator:
     def convert_to_vocab_dict_with_ids(self, vocab_dict):
         # takes the jumble of split tokens and finds all the unique tokens and gives them a
         # unique id in a dictionary
-        vocab_list = self.count_bpe_tokens(vocab_dict, return_list=True)  # Returns a list of unique tokens
+        vocab_list = ["<|GEN|>", "<|ENDGEN|>", "<|BOS|>", "<|EOS|>"]
+        vocab_list += self.count_bpe_tokens(vocab_dict, return_list=True)  # Returns a list of unique tokens
         vocab_dict = {}
         for count, token in enumerate(vocab_list):  # Puts unique tokens into the dictionary with unique ids
             vocab_dict[token] = count
