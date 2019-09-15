@@ -60,24 +60,36 @@ pointer = (c_lib.convert_tokens_to_bpes(5, "hello", vocab, 8))
 print(ctypes.POINTER(ctypes.c_wchar_p(pointer)))
 """
 # The vocab
-og_vocab = ["o", "lol", "hmm", "he", "h", "e", "aw", "l"]
-vocab_type = ctypes.c_wchar_p * 8
-vocab = vocab_type(*og_vocab)
-
-#The string to find the byte pair encoding for
-string_type = ctypes.c_wchar_p
-word = ["hello"]
-word = string_type(*word)
-
-#ctypes stuff
-c_lib = ctypes.CDLL("Z:/Code/A-Level-Tranformer-chatbot-project/scripts/bpe.dll")
-convert_tokens_to_bpes = c_lib.convert_tokens_to_bpes
-convert_tokens_to_bpes.argtypes = ()
-convert_tokens_to_bpes.restype = ctypes.POINTER(ctypes.c_wchar_p)
-result = convert_tokens_to_bpes(5, word, vocab, 8)
-print(result[50])
+vocab_list = []
+length = 0
+val = ""
+for key, value in vocab.items():
+    vocab_list.append(key)
+    if len(key) > length:
+        val = key
+        length = len(key)
+#vocab_list = sorted(vocab_list, key=len)[::-1]
+og_vocab = ["o", "lol", "hmm", "hel", "h", "e", "aw", "l"]
+vocab = (ctypes.c_char_p * len(vocab_list))()
+vocab[:] = [bytes(x, "utf-8") for x in vocab_list]
 
 
+word = """as a string instead o=f byte objcthrtg which"""
+print(len(bytes(word, "utf-8")))
+word_to_go = (ctypes.c_char_p)()
+word_to_go.value = bytes(word, "utf-8")
+print(bytes(word, "utf-8"))
+
+start = time.time()
+# ctypes stuff
+for i in range(100):
+    c_lib = ctypes.CDLL("Z:/Code/A-Level-Tranformer-chatbot-project/scripts/bpe.dll")
+    convert_tokens_to_bpes = c_lib.convert_tokens_to_bpes
+    convert_tokens_to_bpes.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_char_p * len(vocab_list), ctypes.c_int)
+    convert_tokens_to_bpes.restype = ctypes.POINTER(ctypes.c_char_p)
+    result = convert_tokens_to_bpes(len(bytes(word, "utf-8")), word_to_go, vocab, len(vocab_list))
+for i in result:
+    print(i)
 
 
 
