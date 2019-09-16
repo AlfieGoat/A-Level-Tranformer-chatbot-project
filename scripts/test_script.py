@@ -5,35 +5,7 @@ import pickle
 import time
 import ctypes
 
-def convert_tokens_to_bpes(original_string):
-    token_list = []
-    working_string = original_string
-    tokens_in_string = []
-    for key in vocab_list:
-        if key in working_string:  # Goes over the vocab and sees which tokens from the vocab are in the og string
-            tokens_in_string.append(key)
 
-    tokens_in_string = sorted(tokens_in_string, key=len)[::-1] # negligible
-
-    while len(working_string) != 0:
-        start = time.time()
-        candidate = ""
-        for token_in_string in tokens_in_string:
-            if working_string[:len(token_in_string)] == token_in_string:  # Checks if token can be used
-                candidate = token_in_string
-                break
-
-        times.append((time.time() - start))
-        if candidate != "":
-            token_list.append(candidate)
-            working_string = working_string[len(candidate):]
-        else:  # Validation: Value error is raised when something is not in the vocab
-            print(f"{working_string[0]} not in vocab.")
-            return None
-
-
-
-    return token_list
 times = []
 vocab = pickle.load(open("vocab_dict.pickle", "rb"))
 """
@@ -68,28 +40,81 @@ for key, value in vocab.items():
     if len(key) > length:
         val = key
         length = len(key)
+vocab_list = [bytes(x, "utf-8") for x in vocab_list]
+
 #vocab_list = sorted(vocab_list, key=len)[::-1]
 og_vocab = ["o", "lol", "hmm", "hel", "h", "e", "aw", "l"]
 vocab = (ctypes.c_char_p * len(vocab_list))()
-vocab[:] = [bytes(x, "utf-8") for x in vocab_list]
+vocab[:] = vocab_list
 
 
-word = """as a string instead o=f byte objcthrtg which"""
-print(len(bytes(word, "utf-8")))
+#maybe the strlen thing or strcp or memcpy
+
+words = "You've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step."
+words = bytes(words, "utf-8")
+
 word_to_go = (ctypes.c_char_p)()
-word_to_go.value = bytes(word, "utf-8")
-print(bytes(word, "utf-8"))
+word_to_go.value = words
 
+
+
+c_lib = ctypes.CDLL("Z:/Code/A-Level-Tranformer-chatbot-project/scripts/bpe.dll")
+convert_tokens_to_bpes = c_lib.convert_tokens_to_bpes
+convert_tokens_to_bpes.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_char_p * len(vocab_list), ctypes.c_int)
+convert_tokens_to_bpes.restype = ctypes.POINTER(ctypes.c_char_p)
+
+vocab_list_len = len(vocab_list)
 start = time.time()
-# ctypes stuff
-for i in range(100):
-    c_lib = ctypes.CDLL("Z:/Code/A-Level-Tranformer-chatbot-project/scripts/bpe.dll")
-    convert_tokens_to_bpes = c_lib.convert_tokens_to_bpes
-    convert_tokens_to_bpes.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_char_p * len(vocab_list), ctypes.c_int)
-    convert_tokens_to_bpes.restype = ctypes.POINTER(ctypes.c_char_p)
-    result = convert_tokens_to_bpes(len(bytes(word, "utf-8")), word_to_go, vocab, len(vocab_list))
-for i in result:
-    print(i)
+print(start)
+for i in range(1000):
+    result = convert_tokens_to_bpes(len(words), word_to_go, vocab, vocab_list_len)
+
+print(time.time()-start)
+print("lollollol")
+
+def convert_tokens_to_bpes(original_string):
+    token_list = []
+    working_string = original_string
+    tokens_in_string = []
+    for key in vocab_list:
+        if key in working_string:  # Goes over the vocab and sees which tokens from the vocab are in the og string
+            tokens_in_string.append(key)
+
+    tokens_in_string = sorted(tokens_in_string, key=len)[::-1] # negligible
+
+    while len(working_string) != 0:
+        start = time.time()
+        candidate = ""
+        for token_in_string in tokens_in_string:
+            if working_string[:len(token_in_string)] == token_in_string:  # Checks if token can be used
+                candidate = token_in_string
+                break
+
+        times.append((time.time() - start))
+        if candidate != "":
+            token_list.append(candidate)
+            working_string = working_string[len(candidate):]
+        else:  # Validation: Value error is raised when something is not in the vocab
+            print(f"{working_string[0]} not in vocab.")
+            return None
 
 
+
+    return token_list
+vocab = pickle.load(open("vocab_dict.pickle", "rb"))
+vocab_list = []
+for key, value in vocab.items():
+    vocab_list.append(key)
+    if len(key) > length:
+        val = key
+        length = len(key)
+word = "You've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step."
+start = time.time()
+for i in range(1000):
+
+    result = convert_tokens_to_bpes(word)
+
+
+
+print(time.time()-start)
 
