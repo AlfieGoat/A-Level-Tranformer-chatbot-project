@@ -49,7 +49,8 @@ class Database:
     def get_submission_by_id(self, submission_id):
         return self.cursor2.execute(f"SELECT * FROM SUBMISSIONS WHERE id ='{submission_id}'").fetchone()
 
-
+    def custom_call(self, call):
+        return self.cursor.execute(call)
 
 
 

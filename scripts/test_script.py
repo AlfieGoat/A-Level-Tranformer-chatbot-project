@@ -4,8 +4,8 @@ import pre_processing_token_dict_creator
 import pickle
 import time
 import ctypes
-
-
+import pre_processing_database
+import torch
 times = []
 vocab = pickle.load(open("vocab_dict.pickle", "rb"))
 """
@@ -50,7 +50,7 @@ vocab[:] = vocab_list
 
 #maybe the strlen thing or strcp or memcpy
 
-words = "You've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step."
+words = "YoYou've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step.You've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step.You've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step.u've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step."
 words = bytes(words, "utf-8")
 
 word_to_go = (ctypes.c_char_p)()
@@ -66,7 +66,7 @@ convert_tokens_to_bpes.restype = ctypes.POINTER(ctypes.c_char_p)
 vocab_list_len = len(vocab_list)
 start = time.time()
 print(start)
-for i in range(1000):
+for i in range(1):
     result = convert_tokens_to_bpes(len(words), word_to_go, vocab, vocab_list_len)
 
 print(time.time()-start)
@@ -108,13 +108,39 @@ for key, value in vocab.items():
     if len(key) > length:
         val = key
         length = len(key)
-word = "You've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step."
+word = "You've received this eYou've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step.You've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step.You've received this email because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step.mail because your email address was used for registering/updating a JetBrains Educational Pack. You can link JetBrains products to another email address in another step."
 start = time.time()
-for i in range(1000):
+for i in range(1):
 
     result = convert_tokens_to_bpes(word)
 
 
+import pre_processing_raw_train_data_database
 
-print(time.time()-start)
+db = pre_processing_raw_train_data_database.Database()
+
+# TD size = 37861000
+iterable = db.iterate_over_train_data()
+for i in range(37860995, 50000000000, 1):
+    print(i, db.get_train_data_by_id(i)[0])
+"""
+for count in range(5420000, 54110020 , 1):#
+    picks = (pickle.loads(db.get_train_data_by_id(count)[1]), pickle.loads(db.get_train_data_by_id(count)[2]))
+    new1 = ""
+    new2 = ""
+    if len(picks[1]) < 50:
+        for i in picks[0]:
+            for key, value in vocab.items():
+                if value == i:
+                    new1 += key
+                    break
+        for i in picks[1]:
+            for key, value in vocab.items():
+                if value == i:
+                    new2 += key
+                    break
+        print(count, new2, new1)
+
+"""
+
 

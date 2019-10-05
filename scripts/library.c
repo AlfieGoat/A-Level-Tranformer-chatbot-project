@@ -38,7 +38,7 @@ char **convert_tokens_to_bpes(int og_string_len, char *original_string, char **v
     int token_list_len = 0;
     while(working_string_len != 0){
         int have_candidate = 0;
-        char candidate[50];
+        char candidate[35 ];
         for(int i = 0; i < tokens_in_string_len; i++){
             char sub_working_string[strlen(new_tokens_in_string[i])];
             memcpy(sub_working_string, &working_string[0], strlen(new_tokens_in_string[i]) );

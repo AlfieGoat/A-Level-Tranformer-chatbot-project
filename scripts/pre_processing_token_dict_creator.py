@@ -156,11 +156,12 @@ class TokenDictCreator:
     @staticmethod
     def compress_vocab(tally_dict, pre_bpe_vocab_size, track_progress):
         # Shrinks the dictionary, removing the rarest tokens first until it reaches wanted vocab size
+
         to_remove = []
         minimum_occurrences = 1
         while len(tally_dict) >= pre_bpe_vocab_size:  # Keeps shrinking it until it is at the correct length
             for key, value in tally_dict.items():
-                if value == minimum_occurrences:  # adds key to a removal list if it doesn't occur enough times.
+                if value <= minimum_occurrences:  # adds key to a removal list if it doesn't occur enough times.
                     to_remove.append(key)
 
             for key_to_remove in to_remove:  # removes the keys that don't occur enough times.
@@ -171,7 +172,7 @@ class TokenDictCreator:
             if track_progress > 0:
                 print(f"Current length of dict: {len(tally_dict)}")
 
-        pickle.dump(tally_dict, open("compressed_tally_dict.pickle", "wb"))  # Saves the dict after
+        # pickle.dump(tally_dict, open("compressed_tally_dict.pickle", "wb"))  # Saves the dict after
         return tally_dict
 
     @staticmethod

@@ -1,6 +1,6 @@
 import pre_processing_token_dict_creator
 import pickle
-token_dict = pre_processing_token_dict_creator.TokenDictCreator()
+
 """
 token_dict.count_tokens(["Z:/Code/A-Level-Tranformer-chatbot-project/data/uncompressed/RS_2019-05",
                          "Z:/Code/A-Level-Tranformer-chatbot-project/data/uncompressed/RC_2019-05",
@@ -33,12 +33,53 @@ for i in a:
         vocab[i] = len(vocab)
         pickle.dump(vocab, open("vocab_dict.pickle", "wb"))
 """
-with open("current.txt", "w") as file:
-    file.write(str(6))
-vocab = pickle.load(open("vocab_dict.pickle", "rb"))
-import pre_processing_raw_training_data_database
-db = pre_processing_raw_training_data_database.ShelfDB()
-count = 0
-for i in range(1000000):
-    comment = db.retrieve_row(i)[0]
-    print(count)
+
+import sqlite3
+
+
+
+
+import json
+import time
+print("lol")
+a = pre_processing_token_dict_creator.TokenDictCreator()
+vocab_dict = pickle.load(open("tally_dict.pickle", "rb"))
+a.compress_vocab(vocab_dict, 15000, 1000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
