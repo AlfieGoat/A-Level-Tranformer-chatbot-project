@@ -65,7 +65,6 @@ convert_tokens_to_bpes.restype = ctypes.POINTER(ctypes.c_char_p)
 
 vocab_list_len = len(vocab_list)
 start = time.time()
-print(start)
 for i in range(1):
     result = convert_tokens_to_bpes(len(words), word_to_go, vocab, vocab_list_len)
 
@@ -142,5 +141,7 @@ for count in range(5420000, 54110020 , 1):#
         print(count, new2, new1)
 
 """
+
+
 
 

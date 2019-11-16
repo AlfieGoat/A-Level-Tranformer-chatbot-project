@@ -32,7 +32,7 @@ for i in a:
     except KeyError:
         vocab[i] = len(vocab)
         pickle.dump(vocab, open("vocab_dict.pickle", "wb"))
-"""
+
 
 import sqlite3
 
@@ -45,9 +45,50 @@ print("lol")
 a = pre_processing_token_dict_creator.TokenDictCreator()
 vocab_dict = pickle.load(open("tally_dict.pickle", "rb"))
 a.compress_vocab(vocab_dict, 15000, 1000)
+"""
 
+import pre_processing_raw_train_data_database
+import random
 
+db = pre_processing_raw_train_data_database.Database()
+token_dict = pickle.load(open("vocab_dict.pickle", "rb"))
+token_dict_ids = {}
+for key, value in token_dict.items():
+    token_dict_ids[value] = key
 
+lb = 0
+ub = 1000000000000
+old_middle = -1
+while True:
+    middle = (lb + ub) // 2
+    value = db.get_train_data_by_id(middle)
+    if middle == old_middle:
+        print("lol", middle)
+        break
+    if value is None:
+        ub = middle-1
+    else:
+        lb = middle+1
+    old_middle = middle
+    print(middle)
+
+while True:
+    value = db.get_train_data_by_id(random.randint(0, middle))
+    print(value)
+    child_tensor = pickle.loads(value[1])
+    parent_tensor = pickle.loads(value[2])
+
+    child = []
+    parent = []
+
+    for count, value in enumerate(child_tensor):
+        child.append(token_dict_ids[value.item()])
+
+    for count, value in enumerate(parent_tensor):
+        parent.append(token_dict_ids[value.item()])
+    print(parent_tensor)
+    print(f"\nParent({len(parent)}): {''.join(parent)} \nchild({len(child)}): {''.join(child)}")
+    input()
 
 
 

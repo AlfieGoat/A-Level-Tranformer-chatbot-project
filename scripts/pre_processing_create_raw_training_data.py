@@ -5,6 +5,7 @@ import pickle
 import torch
 import time
 import pre_processing_raw_train_data_database
+import pickle
 
 def get_parent(id, db):
     if id[1] == "1":
@@ -51,44 +52,52 @@ def create_torch_tensor(comment, gen=False):
     return tokenised_comment
 
 
-db = pre_processing_raw_train_data_database.Database()
-comment_db = pre_processing_database.Database()
+def main():
+    count = 60054000  # ID number to pick up from, if I stop the script or it fails
+    start = time.time()  # used for measuring time passed
+    cache = []  # A cache which holds the comments temporarily before it is added to the database
+    for index, comment_data in enumerate(iterable_comments):  # Iterates over all the comments
+        """
+        indexing from database
+        0: id
+        1: parent_id 
+        2: score
+        3: subreddit
+        4: comment
+        """
+        if index >= 77565345:  # Index of database to continue getting comments from, if I stop the script or it fails
+            parent = get_parent(comment_data[1], comment_db)  # Gets the parent comments
+            if parent is not None:  # Makes sure parent comment exists
+                # Converts the child comment into BPE tensor
+                tokenised_comment_tensor = create_torch_tensor(comment_data[4], gen=True)
+                # makes sure nothing went wrong whilst making tensor of child comment
+                if tokenised_comment_tensor is not None:
+                    parent = pickle.dumps(parent)  # Serialises the parent comment using pickle
+                    # Serialises the child comment using pickle
+                    tokenised_comment_tensor = pickle.dumps(tokenised_comment_tensor)
+                    count += 1
+                    # adds the serialised data to the cache with their count
+                    cache.append((count, tokenised_comment_tensor, parent))
+                    # print(tokenised_comment_tensor, parent)
+                    if count % 1000 == 0:
+                        # pushes the cache to DB every 1000 comments
+                        print(f"Processed: {count} \t\t\t\t\tTime elapsed: {round(time.time() - start , 2)}")
+                        db.add_train_data_to_db(cache)
+                        cache = []  # Clears the cache
+                        with open("current.txt", "w") as file:
+                            file.write(str(index))  # updates file which keeps track of which index we are working on
 
-vocab = pickle.load(open("vocab_dict.pickle", "rb"))
-iterable_comments = comment_db.iterate_over_comments()
 
-vocab_list = []
-for key, value in vocab.items():
-    vocab_list.append(key)
+if __name__ == "__main__":
+    db = pre_processing_raw_train_data_database.Database()
+    comment_db = pre_processing_database.Database()
+    vocab = pickle.load(open("vocab_dict.pickle", "rb"))
+    iterable_comments = comment_db.iterate_over_comments()
 
-count = 37861000
-start = time.time()
-cache = []
-for index, comment_data in enumerate(iterable_comments):
-    """
-    indexing from database
-    0: id
-    1: parent_id 
-    2: score
-    3: subreddit
-    4: comment
-    """
-    if index >= 48965785:
-        parent = get_parent(comment_data[1], comment_db)
-        if parent is not None:
-            tokenised_comment_tensor = create_torch_tensor(comment_data[4], gen=True)
-            if tokenised_comment_tensor is not None:
-                parent = pickle.dumps(parent)
-                tokenised_comment_tensor = pickle.dumps(tokenised_comment_tensor)
-                count += 1
-                cache.append((count, tokenised_comment_tensor, parent))
-                # print(tokenised_comment_tensor, parent)
-                if count % 1000 == 0:
-                    print(f"Processed: {count} \t\t\t\t\tTime elapsed: {round(time.time() - start , 2)}")
-                    db.add_train_data_to_db(cache)
-                    cache = []
-                    with open("current.txt", "w") as file:
-                        file.write(str(index))
+    vocab_list = []
+    for key, value in vocab.items():
+        vocab_list.append(key)
+    main()
 
 
 

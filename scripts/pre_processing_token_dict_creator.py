@@ -70,15 +70,15 @@ class TokenDictCreator:
     @staticmethod
     def count_bpe_tokens(tally_dict, return_list=False):
 
-        token_counter = []
+        tokens = []
         for key, value in tally_dict.items():  # Counts all unique tokens from tally_dict
             for key_token in key:
-                if key_token not in token_counter:
-                    token_counter.append(key_token)
+                if key_token not in tokens:
+                    tokens.append(key_token)
         if not return_list:
-            return len(token_counter)  # Returns how many unique tokens there are
+            return len(tokens)  # Returns how many unique tokens there are
         else:
-            return token_counter  # Returns all unique tokens in a list
+            return tokens  # Returns all unique tokens in a list
 
     def byte_pair_encodings_creator(self, tally_dict, track_progress):
 
@@ -87,7 +87,8 @@ class TokenDictCreator:
         for key, value in tally_dict.items():  # Goes through dict and tallies most common pairs of tokens
             for i in range(len(key) - 1):
                 if (len(key[i]) > 1 or key[i] in text_category) and (len(key[i+1]) > 1 or key[i+1] in text_category):
-                    # makes sure it is not merging punctuation and words, so we don't end up with lots
+                    # makes sure it is not merging punctuation and words
+                    # (excluding ‘ and - because we often want these to merge), so we don't end up with lots
                     # of different variations of the same word: play play, play! play? etc.
                     if f"{key[i]}{key[i + 1]}" not in byte_counter:  # If it is an unseen pair it will add
                         byte_counter[f"{key[i]}{key[i + 1]}"] = value  # the pair with how many occurrences there are
@@ -228,3 +229,4 @@ class TokenDictCreator:
 
             pickle.dump(counting_dict, open("tally_dict.pickle", "wb"))  # saves the tally_dict after every file
         return counting_dict
+

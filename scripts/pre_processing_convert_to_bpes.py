@@ -16,7 +16,6 @@ def convert_tokens_to_bpes(original_string, vocab_list):
 
     tokens_in_string = sorted(tokens_in_string, key=len)[::-1]
     while len(working_string) != 0:
-
         candidate = ""
         for token_in_string in tokens_in_string:
             if working_string[:len(token_in_string)] == token_in_string:  # Checks if token can be used
@@ -52,3 +51,5 @@ the same function recursively which will find the next token and then same again
 whole token has been found.
 endeavour will turn into [end, eav, our]    
 """
+
+
