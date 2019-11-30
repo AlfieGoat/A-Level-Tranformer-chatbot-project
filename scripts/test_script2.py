@@ -56,6 +56,7 @@ token_dict_ids = {}
 for key, value in token_dict.items():
     token_dict_ids[value] = key
 
+
 lb = 0
 ub = 1000000000000
 old_middle = -1
@@ -70,13 +71,12 @@ while True:
     else:
         lb = middle+1
     old_middle = middle
-    print(middle)
 
 while True:
-    value = db.get_train_data_by_id(random.randint(0, middle))
-    print(value)
-    child_tensor = pickle.loads(value[1])
-    parent_tensor = pickle.loads(value[2])
+    row = db.get_train_data_by_id(random.randint(0, middle))
+
+    child_tensor = pickle.loads(row[1])
+    parent_tensor = pickle.loads(row[2])
 
     child = []
     parent = []
@@ -86,8 +86,10 @@ while True:
 
     for count, value in enumerate(parent_tensor):
         parent.append(token_dict_ids[value.item()])
-    print(parent_tensor)
+
     print(f"\nParent({len(parent)}): {''.join(parent)} \nchild({len(child)}): {''.join(child)}")
+    print(row[-1], child_tensor.shape)
+    print(row[-2], parent_tensor.shape)
     input()
 
 
