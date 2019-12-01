@@ -1,12 +1,12 @@
 import torch
 from torch import nn
-from transformer import Transformer
+#from transformer import Transformer
 import pre_processing_raw_train_data_database
 import torch.utils.data
 import pickle
 import torch.nn.functional as F
 import random
-import transformer
+
 import radam
 import ranger
 from torch.utils.tensorboard import SummaryWriter
@@ -68,28 +68,24 @@ class DataLoader:
         child_length_max = child_length  # stores the child length max so that we can correctly pad the tensor
         query = self.data_set.__getitem__(child_length, parent_length)  # gets rows with certain child and parent length
         # keeps adding data until we exceed the data wanted size of the data
-        while current_size + (parent_length_max + child_length_max*(child_length_max-1)) * 8 < self.batch_size_bytes:
+        while current_size + (parent_length_max + child_length_max) * 8 < self.batch_size_bytes:
             for training_point in query:  # iterates over all of the rows within the query
-                if current_size + (parent_length_max + child_length_max*(child_length_max-1)) * 8 >= self.batch_size_bytes:
+                if current_size + (parent_length_max + child_length_max) * 8 >= self.batch_size_bytes:
                     return torch.stack(encoder), torch.stack(decoder)
                 parent = pickle.loads(training_point[2])  # loads the parent comment tensor
-                parent = F.pad(parent, [0, parent_length_max-parent.shape[0]])  # pads it to the correct length
+                parent = F.pad(parent, [0, parent_length_max-parent.shape[0]], value=14950)  # pads it to the correct length
                 encoder.append(parent)  # adds it to the encoder
-
-                time_steps = []  # holds each time step of the child comment that the model will step through
                 child = pickle.loads(training_point[1])  # loads the child comment tensor
                 # pads the child comment to the correct length
 
-                child = F.pad(child, [0, child_length_max-child.shape[0]])
-                for i in range(child_length-1):
-                    time_steps.append(child)
+                child = F.pad(child, [0, child_length_max-child.shape[0]], value=14950)
 
                 # Adds the time steps to the decoder
 
-                decoder.append(F.pad(torch.stack(time_steps), [0, 0, 0, child_length_max-child_length]))
+                decoder.append(child)
 
                 # Changes current size to reflect what has just been added
-                current_size += (parent_length_max + child_length_max*(child_length_max-1)) * 8
+                current_size += (parent_length_max + child_length_max) * 8
             # print(current_size/self.batch_size_bytes, parent_length, child_length)
             # If we have iterated through the whole query, we will change the parent and child length to load more
             if parent_length >= 3:
@@ -146,13 +142,13 @@ class DataLoader:
 
 class TrainingSkeleton(nn.Module):
 
-    def __init__(self, epochs=1, batch_size_bytes=0.003e9, save_rate=25):
+    def __init__(self, epochs=1, batch_size_bytes=0.001e9, save_rate=25):
         super(TrainingSkeleton, self).__init__()
         self.vocab = pickle.load(open("vocab_dict.pickle", "rb"))
         self.DataLoader = DataLoader(batch_size_bytes, True)
-        self.transformer = transformer.Transformer(len(self.vocab)).cuda()
+        #self.transformer = transformer.Transformer(len(self.vocab)).cuda()
         self.epochs = epochs
-        self.optimizer = ranger.Ranger(self.transformer.parameters())
+        #self.optimizer = ranger.Ranger(self.transformer.parameters())
         self.loss = nn.CrossEntropyLoss()
         self.summary_writer = SummaryWriter('runs')
         self.save_rate = save_rate
@@ -211,8 +207,7 @@ class TrainingSkeleton(nn.Module):
         return checkpoint
 
 
-training1 = TrainingSkeleton()
-training1.training_loop()
+
 
 
 
