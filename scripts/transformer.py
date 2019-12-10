@@ -19,7 +19,6 @@ class ScaledDotProductAttention(nn.Module):
         x = torch.matmul(x, values)
         return x
 
-
 # TODO add masking
 
 class MultiHeadAttention(nn.Module):
@@ -32,30 +31,44 @@ class MultiHeadAttention(nn.Module):
         self.head_dim = head_dim
         self.model_dim = model_dim
 
-        self.query_linear = nn.Linear(model_dim, self.num_heads * self.head_dim)
-        self.key_linear = nn.Linear(model_dim, self.num_heads * self.head_dim)
-        self.values_linear = nn.Linear(model_dim, self.num_heads * self.head_dim)
+        self.query_linear = nn.Linear(
+            model_dim, self.num_heads * self.head_dim)
+        
+        self.key_linear = nn.Linear(
+            model_dim, self.num_heads * self.head_dim)
+        
+        self.values_linear = nn.Linear(
+            model_dim, self.num_heads * self.head_dim)
 
-        self.final_linear = nn.Linear(self.num_heads * self.head_dim, model_dim)
+        self.final_linear = nn.Linear(
+            self.num_heads * self.head_dim, model_dim)
 
-    def forward(self, queries, keys, values, enc=True):  # [batch_size, length, model_dim]
-        if enc:
-            batch_size, n_queries, model_dim = queries.shape
-            batch_size, n_keys, model_dim = keys.shape
-            batch_size, n_values, model_dim = values.shape
+    def forward(self, queries, keys, values):
+        """[batch_size, length, model_dim]"""
+        batch_size, n_queries, model_dim = queries.shape
+        batch_size, n_keys, model_dim = keys.shape
+        batch_size, n_values, model_dim = values.shape
 
-            queries = self.query_linear(queries).view(batch_size, n_queries, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
-            keys = self.key_linear(keys).view(batch_size, n_keys, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
-            values = self.key_linear(values).view(batch_size, n_values, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
+        queries = self.query_linear(queries).view(
+            batch_size, n_queries, self.num_heads, self.head_dim).permute(
+                0, 2, 1, 3)
+        
+        keys = self.key_linear(keys).view(
+            batch_size, n_keys, self.num_heads, self.head_dim).permute(
+                0, 2, 1, 3)
+            
+        values = self.key_linear(values).view(
+            batch_size, n_values, self.num_heads, self.head_dim).permute(
+                0, 2, 1, 3)
 
-            x = self.attention(queries, keys, values)
+        x = self.attention(queries, keys, values)
 
-            x = x.permute(0, 2, 1, 3).contiguous().view(batch_size, n_queries, model_dim)
-            x = self.final_linear(x)
+        x = x.permute(0, 2, 1, 3).contiguous().view(
+            batch_size, n_queries, model_dim)
+        
+        x = self.final_linear(x)
 
-            return x
-
-
+        return x
 
 
 class FeedForward(nn.Module):

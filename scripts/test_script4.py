@@ -1,3 +1,4 @@
-import pickle
-vocab = pickle.load(open("vocab_dict.pickle", "rb"))
-print(vocab)
+import torch
+
+tensor = torch.randint(50, (3,3,3))
+print(tensor)
