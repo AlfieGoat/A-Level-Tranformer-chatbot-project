@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-#from transformer import Transformer
+from transformer import Transformer
 import pre_processing_raw_train_data_database
 import torch.utils.data
 import pickle
@@ -142,13 +142,13 @@ class DataLoader:
 
 class TrainingSkeleton(nn.Module):
 
-    def __init__(self, epochs=1, batch_size_bytes=0.001e9, save_rate=25):
+    def __init__(self, epochs=1, batch_size_bytes=195312, save_rate=25):
         super(TrainingSkeleton, self).__init__()
         self.vocab = pickle.load(open("vocab_dict.pickle", "rb"))
         self.DataLoader = DataLoader(batch_size_bytes, True)
-        #self.transformer = transformer.Transformer(len(self.vocab)).cuda()
+        self.transformer = Transformer(6, 8, 8, 64, 512, 2048, 0.1, "cuda:0", "cuda:1", len(self.vocab))
         self.epochs = epochs
-        #self.optimizer = ranger.Ranger(self.transformer.parameters())
+        self.optimizer = ranger.Ranger(self.transformer.parameters())
         self.loss = nn.CrossEntropyLoss()
         self.summary_writer = SummaryWriter('runs')
         self.save_rate = save_rate
@@ -156,7 +156,7 @@ class TrainingSkeleton(nn.Module):
 
     @staticmethod
     def make_expected_values(dec_inp):  # Converts the decoder values into values acceptable to the model
-        return dec_inp  # TODO Add expected values
+        return (dec_inp*0).to("cuda:1").long()  # TODO Add expected values
 
     def training_loop(self, model_id=None):  # The main training loop
         if model_id is not None:
@@ -175,8 +175,10 @@ class TrainingSkeleton(nn.Module):
                 self.optimizer.zero_grad()  # Zeros the gradient
                 enc_inp, dec_inp = self.DataLoader.get_batch()  # Gets a batch
                 # sends data to the transformer
-                prediction = self.transformer(enc_inp.long().cuda(), dec_inp.long().cuda())
-                expected = self.make_expected_values(dec_inp)  # Makes the expected values
+                print(dec_inp)
+                prediction = self.transformer(enc_inp, dec_inp).view(-1, len(self.vocab))
+                print(prediction)
+                expected = self.make_expected_values(dec_inp).flatten()  # Makes the expected values
                 loss = self.loss(prediction, expected)  # Gets the loss of output of the model
                 loss.backward()
                 self.optimizer.step()  # The backwards propagation step
@@ -199,7 +201,7 @@ class TrainingSkeleton(nn.Module):
                 'epoch': epoch,
                 'iteration': iteration
             },
-            f"model_saving/model_{model_id}.pt")
+            f"./model_saving/model_{model_id}.pt")
 
     @staticmethod
     def load_model(model_id):  # Loads the model
@@ -209,7 +211,8 @@ class TrainingSkeleton(nn.Module):
 
 
 
-
+a = TrainingSkeleton()
+a.training_loop()
 
 
 
